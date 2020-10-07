@@ -1,10 +1,12 @@
 ﻿using Jerrycurl.Diagnostics;
 using Jerrycurl.Relations.Metadata;
 using System;
+using System.Diagnostics;
 using HashCode = Jerrycurl.Diagnostics.HashCode;
 
 namespace Jerrycurl.Relations
 {
+    [DebuggerDisplay("{Identity.Name}: {ToString(),nq}")]
     internal class Missing<TValue> : IField
     {
         public FieldIdentity Identity { get; }
@@ -22,7 +24,6 @@ namespace Jerrycurl.Relations
 
             this.Identity = new FieldIdentity(metadata, name);
             this.Model = model ?? throw new ArgumentNullException(nameof(model));
-            this.Value = default(TValue);
         }
 
         public void Bind(object newValue) => throw BindingException.FromField(this, "Missing fields are not bindable due to a null container.");
@@ -31,6 +32,6 @@ namespace Jerrycurl.Relations
         public override bool Equals(object obj) => (obj is IField field && this.Equals(field));
         public override int GetHashCode() => HashCode.Combine(this.Model, this.Identity);
 
-        public override string ToString() => this.Identity.Name + " = <missing>";
+        public override string ToString() => "<missing>";
     }
 }

@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Jerrycurl.CodeAnalysis;
 using Jerrycurl.CodeAnalysis.Projection;
 using Jerrycurl.CodeAnalysis.Razor.Generation;
 using Jerrycurl.CodeAnalysis.Razor.Parsing;
+using Jerrycurl.CodeAnalysis.Razor.ProjectSystem;
+using Jerrycurl.Facts;
 using Jerrycurl.Reflection;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -34,32 +37,26 @@ namespace Jerrycurl.Build.Razor
 
             this.PrintProjectData(project);
 
-            List<string> tempFiles = new List<string>();
-
-            string tempDir = this.CreateTempDirectory();
+            List<string> filesToCompile = new List<string>();
 
             Stopwatch watch = Stopwatch.StartNew();
 
             foreach (RazorPage razorPage in parser.Parse(project))
             {
-                string tempFile = this.GetTempFile(tempDir, razorPage);
+                RazorGenerator generator = new RazorGenerator(this.CreateGeneratorOptions());
+                ProjectionResult result = generator.Generate(razorPage.Data);
 
-                using (StreamWriter writer = this.GetStreamWriter(tempFile))
-                {
-                    RazorGenerator generator = new RazorGenerator(this.GetGeneratorOptions());
-                    ProjectionResult result = generator.Generate(razorPage.Data);
+                Directory.CreateDirectory(Path.GetDirectoryName(razorPage.IntermediatePath));
+                File.WriteAllText(razorPage.IntermediatePath, result.Content, Encoding.UTF8);
 
-                    writer.Write(result.Content);
-                }
+                this.PrintPageData(razorPage, razorPage.IntermediatePath);
 
-                this.PrintPageData(razorPage, tempFile);
-
-                tempFiles.Add(tempFile);
+                filesToCompile.Add(razorPage.IntermediatePath);
             }
 
-            this.Compile = tempFiles.ToArray();
+            this.Compile = filesToCompile.ToArray();
 
-            this.PrintResultData(tempFiles.Count, watch.ElapsedMilliseconds);
+            this.PrintResultData(filesToCompile.Count, watch.ElapsedMilliseconds);
 
             return true;
         }
@@ -79,54 +76,7 @@ namespace Jerrycurl.Build.Razor
                 return $"{escapedNs}.{escapedClass}";
         }
 
-        private string NormalizePath(string path) => path?.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
-
-        private StreamWriter GetStreamWriter(string filePath)
-        {
-            if (!Directory.Exists(Path.GetDirectoryName(filePath)))
-                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-
-            return new StreamWriter(filePath);
-        }
-
-        private string GetTempFile(string tempDir, RazorPage razorFile)
-        {
-            string baseName = Path.GetFileNameWithoutExtension(razorFile.ProjectPath ?? razorFile.Path);
-            string fileName;
-
-            if (razorFile.ProjectPath != null)
-                fileName = Path.Combine(Path.GetDirectoryName(razorFile.ProjectPath), $"{baseName}.g.cssql.cs");
-            else
-                fileName = $"{baseName}.{razorFile.Path.GetHashCode():x2}.g.cssql.cs";
-
-            return Path.Combine(tempDir, this.NormalizePath(fileName));
-        }
-
-        private string CreateTempDirectory()
-        {
-            string intermediatePath = this.IntermediatePath;
-
-            if (intermediatePath == null)
-                intermediatePath = Path.Combine(Environment.CurrentDirectory, "obj", "Jerrycurl");
-
-            intermediatePath = this.NormalizePath(intermediatePath);
-
-            if (Directory.Exists(intermediatePath))
-            {
-                try
-                {
-                    Directory.Delete(intermediatePath, true);
-                }
-                catch { }
-            }
-
-            if (!Directory.Exists(intermediatePath))
-                Directory.CreateDirectory(intermediatePath);
-
-            return intermediatePath;
-        }
-
-        private GeneratorOptions GetGeneratorOptions()
+        private GeneratorOptions CreateGeneratorOptions()
         {
             string templateCode = null;
 
@@ -136,7 +86,7 @@ namespace Jerrycurl.Build.Razor
             return new GeneratorOptions()
             {
                 TemplateCode = templateCode,
-                Imports = new List<RazorFragment>(RazorFacts.GetDefaultNamespaces().Select(ns => new RazorFragment() { Text = ns })),
+                Imports = RazorFacts.DefaultNamespaces.Select(ns => new RazorFragment() { Text = ns }).ToList(),
             };
         }
 
@@ -147,6 +97,7 @@ namespace Jerrycurl.Build.Razor
                 RootNamespace = this.RootNamespace,
                 Items = this.GetProjectItems().ToList(),
                 ProjectDirectory = Environment.CurrentDirectory,
+                IntermediateDirectory = this.IntermediatePath ?? RazorProjectConventions.DefaultIntermediateDirectory,
             };
 
             if (string.IsNullOrWhiteSpace(project.RootNamespace))
@@ -181,10 +132,15 @@ namespace Jerrycurl.Build.Razor
 
             this.Log.LogMessage(importance, message);
         }
+
         private void PrintProjectData(RazorProject project)
         {
-            this.PrintMessage("Jerrycurl Build Engine");
-            this.PrintMessage($"\tVersion: " + typeof(Jcst).Assembly.GetNuGetPackageVersion() ?? "<unknown>");
+            NuGetVersion version = typeof(Jcst).Assembly.GetNuGetPackageVersion();
+
+            if (version == null)
+                this.PrintMessage($"Jerrycurl Build Engine");
+            else
+                this.PrintMessage($"Jerrycurl Build Engine v{version.PublicVersion} ({version.CommitHash})");
             this.PrintMessage($"\tProjectName: {this.ProjectName}");
             this.PrintMessage($"\tProjectDirectory: {project.ProjectDirectory}");
             this.PrintMessage($"\tRootNamespace: {this.RootNamespace}");

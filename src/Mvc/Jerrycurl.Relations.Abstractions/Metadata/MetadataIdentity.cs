@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
 using Jerrycurl.Diagnostics;
-using Jerrycurl.Reflection;
 using HashCode = Jerrycurl.Diagnostics.HashCode;
 
 namespace Jerrycurl.Relations.Metadata
 {
+    [DebuggerDisplay("{Schema.ToString(),nq}({Name,nq})")]
     public sealed class MetadataIdentity : IEquatable<MetadataIdentity>
     {
         public string Name { get; }
@@ -27,20 +28,11 @@ namespace Jerrycurl.Relations.Metadata
             where TMetadata : IMetadata
             => this.Schema.GetMetadata<TMetadata>(this.Name);
 
-        public MetadataIdentity Parent()
-        {
-            string parentName = this.Notation.Parent(this.Name);
-
-            if (parentName != null)
-                return new MetadataIdentity(this.Schema, parentName);
-
-            return null;
-        }
-
-        public MetadataIdentity Child(string propertyName) => new MetadataIdentity(this.Schema, this.Notation.Combine(this.Name, propertyName));
-
         public bool Equals(MetadataIdentity other)
         {
+            if (other == null)
+                return false;
+
             Equality eq = new Equality();
 
             eq.Add(this.Name, other.Name, this.Notation.Comparer);
@@ -60,12 +52,18 @@ namespace Jerrycurl.Relations.Metadata
             return hashCode.ToHashCode();
         }
 
-        public override string ToString()
-        {
-            if (this.Notation.Equals(this.Notation.Model(), this.Name))
-                return $"{this.Schema.Model.GetSanitizedName()}:<model>";
+        public override string ToString() => this.Notation.Model().Equals(this.Name) ? "<model>" : this.Name;
 
-            return $"{this.Schema.Model.GetSanitizedName()}:{this.Name}";
+        public MetadataIdentity Pop()
+        {
+            string parentName = this.Notation.Parent(this.Name);
+
+            if (parentName != null)
+                return new MetadataIdentity(this.Schema, parentName);
+
+            return null;
         }
+
+        public MetadataIdentity Push(string propertyName) => new MetadataIdentity(this.Schema, this.Notation.Combine(this.Name, propertyName));
     }
 }

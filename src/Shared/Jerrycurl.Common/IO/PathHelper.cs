@@ -7,23 +7,6 @@ namespace Jerrycurl.IO
     {
         public static bool IsRelativeTo(string path, string basePath) => (MakeRelativePath(basePath, path) != null);
 
-        public static string NormalizePath(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-                return path;
-            else if (Path.IsPathRooted(path))
-                return Path.GetFullPath(path);
-            else
-            {
-                string dotPath = Path.GetFullPath(".");
-
-                if (path.StartsWith(dotPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
-                    return path.Remove(0, dotPath.Length + 1);
-
-                return path;
-            }
-        }
-
         public static string MakeAbsolutePath(string basePath, string path)
         {
             MakeRelativeAndAbsolutePath(basePath, path, out string absolutePath, out _);
@@ -52,8 +35,8 @@ namespace Jerrycurl.IO
             if (string.IsNullOrWhiteSpace(path))
                 throw new ArgumentException("Path cannot be empty.", nameof(path));
 
-            string fullBasePath = Path.GetFullPath(string.IsNullOrEmpty(basePath) ? "." : basePath);
-            string fullPath = Path.GetFullPath(path);
+            string fullBasePath = Path.GetFullPath(string.IsNullOrWhiteSpace(basePath) ? "." : basePath);
+            string fullPath = Path.GetFullPath(Path.IsPathRooted(path) ? path : Path.Combine(Path.GetFullPath("."), path));
 
             fullBasePath = fullBasePath.TrimEnd(Path.DirectorySeparatorChar);
 

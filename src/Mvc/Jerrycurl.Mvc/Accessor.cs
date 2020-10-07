@@ -36,8 +36,8 @@ namespace Jerrycurl.Mvc
             SqlOptions options = this.GetQueryOptions(result.Domain);
             configure?.Invoke(options);
 
-            ISqlSerializer<QueryData> serializer = result.Buffer as ISqlSerializer<QueryData>;
-            IEnumerable<QueryData> queries = serializer?.Serialize(options);
+            ISqlSerializer<Query> serializer = result.Buffer as ISqlSerializer<Query>;
+            IEnumerable<Query> queries = serializer?.Serialize(options);
 
             QueryOptions queryOptions = new QueryOptions()
             {
@@ -46,9 +46,9 @@ namespace Jerrycurl.Mvc
                 Filters = options.Filters,
             };
 
-            QueryHandler handler = new QueryHandler(queryOptions);
+            QueryEngine engine = new QueryEngine(queryOptions);
 
-            return handler.EnumerateAsync<TItem>(queries, cancellationToken);
+            return engine.EnumerateAsync<TItem>(queries, cancellationToken);
         }
 
         /// <summary>
@@ -70,8 +70,8 @@ namespace Jerrycurl.Mvc
             SqlOptions options = this.GetQueryOptions(result.Domain);
             configure?.Invoke(options);
 
-            ISqlSerializer<QueryData> serializer = result.Buffer as ISqlSerializer<QueryData>;
-            IEnumerable<QueryData> queries = serializer?.Serialize(options);
+            ISqlSerializer<Query> serializer = result.Buffer as ISqlSerializer<Query>;
+            IEnumerable<Query> queries = serializer?.Serialize(options);
 
             QueryOptions queryOptions = new QueryOptions()
             {
@@ -80,9 +80,9 @@ namespace Jerrycurl.Mvc
                 Filters = options.Filters,
             };
 
-            QueryHandler handler = new QueryHandler(queryOptions);
+            QueryEngine engine = new QueryEngine(queryOptions);
 
-            return handler.EnumerateAsync(queries, cancellationToken);
+            return engine.EnumerateAsync(queries, cancellationToken);
         }
 
         /// <summary>
@@ -104,8 +104,8 @@ namespace Jerrycurl.Mvc
             SqlOptions options = this.GetQueryOptions(result.Domain);
             configure?.Invoke(options);
 
-            ISqlSerializer<QueryData> serializer = result.Buffer as ISqlSerializer<QueryData>;
-            IEnumerable<QueryData> queries = serializer?.Serialize(options);
+            ISqlSerializer<Query> serializer = result.Buffer as ISqlSerializer<Query>;
+            IEnumerable<Query> queries = serializer?.Serialize(options);
 
             QueryOptions queryOptions = new QueryOptions()
             {
@@ -114,18 +114,18 @@ namespace Jerrycurl.Mvc
                 Filters = options.Filters,
             };
 
-            QueryHandler handler = new QueryHandler(queryOptions);
+            QueryEngine engine = new QueryEngine(queryOptions);
 
-            return handler.Enumerate<TItem>(queries);
+            return engine.Enumerate<TItem>(queries);
         }
 
         /// <summary>
-        /// Executes a Razor SQL query with a specified model and returns an unbuffered list of <see cref="QueryReader"/> instances each of which can enumerate items in its corresponding result set.
+        /// Executes a Razor SQL query with a specified model and returns an unbuffered list of <see cref="QueryReader2"/> instances each of which can enumerate items in its corresponding result set.
         /// </summary>
         /// <param name="model">A concrete model containing parameter values for the query.</param>
         /// <param name="configure">A method for configuring query options.</param>
         /// <param name="queryName">The query name to locate the Razor page by. Defaults to the name of the calling method.</param>
-        /// <returns>An enumerable providing a <see cref="QueryReader"/> instance for every data set in the result.</returns>
+        /// <returns>An enumerable providing a <see cref="QueryReader2"/> instance for every data set in the result.</returns>
         protected IEnumerable<QueryReader> Enumerate(object model = null, Action<SqlOptions> configure = null, [CallerMemberName]string queryName = null)
         {
             IProcResult result = this.ExecuteAndGetResult(queryName, model, new ProcArgs()
@@ -137,8 +137,8 @@ namespace Jerrycurl.Mvc
             SqlOptions options = this.GetQueryOptions(result.Domain);
             configure?.Invoke(options);
 
-            ISqlSerializer<QueryData> serializer = result.Buffer as ISqlSerializer<QueryData>;
-            IEnumerable<QueryData> queries = serializer?.Serialize(options);
+            ISqlSerializer<Query> serializer = result.Buffer as ISqlSerializer<Query>;
+            IEnumerable<Query> queries = serializer?.Serialize(options);
 
             QueryOptions queryOptions = new QueryOptions()
             {
@@ -147,9 +147,9 @@ namespace Jerrycurl.Mvc
                 Filters = options.Filters,
             };
 
-            QueryHandler handler = new QueryHandler(queryOptions);
+            QueryEngine engine = new QueryEngine(queryOptions);
 
-            return handler.Enumerate(queries);
+            return engine.Enumerate(queries);
         }
 
         /// <summary>
@@ -182,8 +182,8 @@ namespace Jerrycurl.Mvc
             SqlOptions options = this.GetQueryOptions(result.Domain);
             configure?.Invoke(options);
 
-            ISqlSerializer<QueryData> serializer = result.Buffer as ISqlSerializer<QueryData>;
-            IEnumerable<QueryData> queries = serializer?.Serialize(options);
+            ISqlSerializer<Query> serializer = result.Buffer as ISqlSerializer<Query>;
+            IEnumerable<Query> queries = serializer?.Serialize(options);
 
             QueryOptions queryOptions = new QueryOptions()
             {
@@ -192,9 +192,9 @@ namespace Jerrycurl.Mvc
                 Filters = options.Filters,
             };
 
-            QueryHandler handler = new QueryHandler(queryOptions);
+            QueryEngine engine = new QueryEngine(queryOptions);
 
-            return handler.List<TItem>(queries);
+            return engine.List<TItem>(queries);
         }
 
         /// <summary>
@@ -229,8 +229,8 @@ namespace Jerrycurl.Mvc
             SqlOptions options = this.GetQueryOptions(result.Domain);
             configure?.Invoke(options);
 
-            ISqlSerializer<QueryData> serializer = result.Buffer as ISqlSerializer<QueryData>;
-            IEnumerable<QueryData> queries = serializer?.Serialize(options);
+            ISqlSerializer<Query> serializer = result.Buffer as ISqlSerializer<Query>;
+            IEnumerable<Query> queries = serializer?.Serialize(options);
 
             QueryOptions queryOptions = new QueryOptions()
             {
@@ -239,9 +239,9 @@ namespace Jerrycurl.Mvc
                 Filters = options.Filters,
             };
 
-            QueryHandler handler = new QueryHandler(queryOptions);
+            QueryEngine engine = new QueryEngine(queryOptions);
 
-            return await handler.ListAsync<TItem>(queries, cancellationToken).ConfigureAwait(false);
+            return await engine.ListAsync<TItem>(queries, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -270,8 +270,8 @@ namespace Jerrycurl.Mvc
             SqlOptions options = this.GetCommandOptions(result.Domain);
             configure?.Invoke(options);
 
-            ISqlSerializer<CommandData> serializer = result.Buffer as ISqlSerializer<CommandData>;
-            IEnumerable<CommandData> commands = serializer.Serialize(options);
+            ISqlSerializer<Command> serializer = result.Buffer as ISqlSerializer<Command>;
+            IEnumerable<Command> commands = serializer.Serialize(options);
 
             CommandOptions commandOptions = new CommandOptions()
             {
@@ -279,9 +279,9 @@ namespace Jerrycurl.Mvc
                 Filters = options.Filters,
             };
 
-            CommandHandler handler = new CommandHandler(commandOptions);
+            CommandEngine engine = new CommandEngine(commandOptions);
 
-            handler.Execute(commands);
+            engine.Execute(commands);
         }
 
         /// <summary>
@@ -313,8 +313,8 @@ namespace Jerrycurl.Mvc
             SqlOptions options = this.GetCommandOptions(result.Domain);
             configure?.Invoke(options);
 
-            ISqlSerializer<CommandData> serializer = result.Buffer as ISqlSerializer<CommandData>;
-            IEnumerable<CommandData> commands = serializer.Serialize(options);
+            ISqlSerializer<Command> serializer = result.Buffer as ISqlSerializer<Command>;
+            IEnumerable<Command> commands = serializer.Serialize(options);
 
             CommandOptions commandOptions = new CommandOptions()
             {
@@ -322,9 +322,9 @@ namespace Jerrycurl.Mvc
                 Filters = options.Filters,
             };
 
-            CommandHandler handler = new CommandHandler(commandOptions);
+            CommandEngine engine = new CommandEngine(commandOptions);
 
-            await handler.ExecuteAsync(commands, cancellationToken).ConfigureAwait(false);
+            await engine.ExecuteAsync(commands, cancellationToken).ConfigureAwait(false);
         }
 
         private IProcResult ExecuteAndGetResult(string procName, object model, ProcArgs args)
@@ -350,5 +350,76 @@ namespace Jerrycurl.Mvc
                 MaxSql = domain.Sql.MaxSql,
             };
         }
+
+        #region " Aggregate "
+        /// <summary>
+        /// Executes a Razor SQL query with a specified model and returns a single, buffered list from the product of its result sets.
+        /// </summary>
+        /// <typeparam name="T">The resulting type of each item in the list.</typeparam>
+        /// <param name="model">A concrete model containing parameter values for the query.</param>
+        /// <param name="configure">A method for configuring query options.</param>
+        /// <param name="queryName">The query name to locate the Razor page by. Defaults to the name of the calling method.</param>
+        /// <returns>An buffered list of <typeparamref name="T"/> items.</returns>
+        protected T Aggregate<T>(object model = null, Action<SqlOptions> configure = null, [CallerMemberName] string queryName = null)
+        {
+            IProcResult result = this.ExecuteAndGetResult(queryName, model, new ProcArgs()
+            {
+                ModelType = model?.GetType() ?? typeof(object),
+                ResultType = typeof(IList<T>),
+            });
+
+            SqlOptions options = this.GetQueryOptions(result.Domain);
+            configure?.Invoke(options);
+
+            ISqlSerializer<Query> serializer = result.Buffer as ISqlSerializer<Query>;
+            IEnumerable<Query> queries = serializer?.Serialize(options);
+
+            QueryOptions queryOptions = new QueryOptions()
+            {
+                ConnectionFactory = result.Domain.ConnectionFactory,
+                Schemas = result.Domain.Schemas,
+                Filters = options.Filters,
+            };
+
+            QueryEngine engine = new QueryEngine(queryOptions);
+
+            return engine.Aggregate<T>(queries);
+        }
+
+        /// <summary>
+        /// Executes an asynchronous Razor SQL query with a specified model and returns a single, buffered list from the product of its result sets.
+        /// </summary>
+        /// <typeparam name="T">The resulting type of each item in the list.</typeparam>
+        /// <param name="model">A concrete model containing parameter values for the query.</param>
+        /// <param name="configure">A method for configuring query options.</param>
+        /// <param name="queryName">The query name to locate the Razor page by. Defaults to the name of the calling method.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <returns>An buffered list of <typeparamref name="T"/> items.</returns>
+        protected async Task<T> AggregateAsync<T>(object model = null, Action<SqlOptions> configure = null, [CallerMemberName] string queryName = null, CancellationToken cancellationToken = default)
+        {
+            IProcResult result = this.ExecuteAndGetResult(queryName, model, new ProcArgs()
+            {
+                ModelType = model?.GetType() ?? typeof(object),
+                ResultType = typeof(IList<T>),
+            });
+
+            SqlOptions options = this.GetQueryOptions(result.Domain);
+            configure?.Invoke(options);
+
+            ISqlSerializer<Query> serializer = result.Buffer as ISqlSerializer<Query>;
+            IEnumerable<Query> queries = serializer?.Serialize(options);
+
+            QueryOptions queryOptions = new QueryOptions()
+            {
+                ConnectionFactory = result.Domain.ConnectionFactory,
+                Schemas = result.Domain.Schemas,
+                Filters = options.Filters,
+            };
+
+            QueryEngine engine = new QueryEngine(queryOptions);
+
+            return await engine.AggregateAsync<T>(queries, cancellationToken).ConfigureAwait(false);
+        }
+        #endregion
     }
 }

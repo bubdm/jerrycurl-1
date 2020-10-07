@@ -13,7 +13,9 @@ namespace Jerrycurl.Relations.Metadata
         public IRelationMetadata MemberOf { get; set; }
         public RelationMetadata Item { get; set; }
         public Lazy<IReadOnlyList<RelationMetadata>> Properties { get; set; }
+        public IRelationMetadata Recursor { get; set; }
         public RelationMetadataFlags Flags { get; set; }
+        public int Depth { get; set; }
 
         public IReadOnlyList<Attribute> Annotations { get; set; } = Array.Empty<Attribute>();
         public MemberInfo Member { get; set; }
@@ -21,7 +23,7 @@ namespace Jerrycurl.Relations.Metadata
         public MethodInfo ReadIndex { get; set; }
         public MethodInfo WriteIndex { get; set; }
 
-        IEnumerable<IRelationMetadata> IRelationMetadata.Properties => this.Properties.Value;
+        IReadOnlyList<IRelationMetadata> IRelationMetadata.Properties => this.Properties.Value;
         IRelationMetadata IRelationMetadata.Item => this.Item;
 
         public RelationMetadata(MetadataIdentity identity)

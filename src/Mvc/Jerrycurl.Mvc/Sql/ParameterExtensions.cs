@@ -29,7 +29,12 @@ namespace Jerrycurl.Mvc.Sql
                 newAttrs.Add(newAttr);
             }
 
-            return projection.With(attributes: newAttrs);
+            ProjectionOptions newOptions = new ProjectionOptions(projection.Options)
+            {
+                Separator = Environment.NewLine + "AND" + Environment.NewLine,
+            };
+
+            return projection.With(attributes: newAttrs, options: newOptions);
         }
 
         /// <summary>
@@ -39,6 +44,9 @@ namespace Jerrycurl.Mvc.Sql
         /// <returns>A new attribute containing the appended buffer.</returns>
         public static IProjectionAttribute Par(this IProjectionAttribute attribute)
         {
+            if (!attribute.Context.Domain.Dialect.Support.HasFlag(DialectSupport.InputParameters))
+                throw ProjectionException.FromProjection(attribute, $"Dialect '{attribute.Context.Domain.Dialect.GetType().Name}' does not support input parameters.");
+
             IField value = attribute.Field?.Invoke();
 
             if (value != null)
@@ -50,9 +58,9 @@ namespace Jerrycurl.Mvc.Sql
 
                 IProjectionAttribute result = attribute.Append(dialectName).Append(param);
 
-                if (attribute.Metadata.HasFlag(ProjectionMetadataFlags.Output))
+                if (attribute.Metadata.HasFlag(ProjectionMetadataFlags.Output) && attribute.Context.Domain.Dialect.Support.HasFlag(DialectSupport.OutputParameters))
                 {
-                    ParameterBinding binding = new ParameterBinding(param.Name, value);
+                    ParameterBinding binding = new ParameterBinding(param);
 
                     result = result.Append(binding);
                 }

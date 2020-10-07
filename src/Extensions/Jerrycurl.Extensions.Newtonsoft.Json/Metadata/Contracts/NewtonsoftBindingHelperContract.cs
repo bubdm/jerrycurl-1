@@ -8,7 +8,7 @@ namespace Jerrycurl.Extensions.Newtonsoft.Json.Metadata.Contracts
         public NewtonsoftBindingHelperContract(JsonSerializerSettings settings)
             : base(settings)
         {
-
+            
         }
     }
 }

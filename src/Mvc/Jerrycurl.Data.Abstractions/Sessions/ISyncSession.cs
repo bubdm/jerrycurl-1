@@ -6,6 +6,6 @@ namespace Jerrycurl.Data.Sessions
 {
     public interface ISyncSession : IDisposable
     {
-        IEnumerable<IDataReader> Execute(IOperation operation);
+        IEnumerable<IDataReader> Execute(IBatch batch);
     }
 }

@@ -20,16 +20,16 @@ namespace Jerrycurl.Data.Sessions
         private bool wasDisposed = false;
         private bool wasOpened = false;
 
-        public AsyncSession(SessionOptions options)
+        public AsyncSession(Func<IDbConnection> connectionFactory, ICollection<IFilter> filters)
         {
-            if (options == null)
-                throw new ArgumentNullException(nameof(options));
+            if (connectionFactory == null)
+                throw new ArgumentNullException(nameof(connectionFactory));
 
-            this.connectionBase = options?.ConnectionFactory?.Invoke();
+            this.connectionBase = connectionFactory.Invoke();
             this.connection = this.connectionBase as DbConnection;
             this.VerifyConnection();
 
-            this.filters = options?.Filters.Select(f => f.GetAsyncHandler(this.connectionBase)).NotNull().ToArray() ?? Array.Empty<IFilterAsyncHandler>();
+            this.filters = filters?.Select(f => f.GetAsyncHandler(this.connectionBase)).NotNull().ToArray() ?? Array.Empty<IFilterAsyncHandler>();
         }
 
         private void VerifyConnection()
@@ -45,18 +45,18 @@ namespace Jerrycurl.Data.Sessions
         }
 
 
-        public async IAsyncEnumerable<DbDataReader> ExecuteAsync(IOperation operation, [EnumeratorCancellation]CancellationToken cancellationToken)
+        public async IAsyncEnumerable<DbDataReader> ExecuteAsync(IBatch batch, [EnumeratorCancellation]CancellationToken cancellationToken = default)
         {
             DbConnection connection = await this.GetOpenConnectionAsync(cancellationToken).ConfigureAwait(false);
             DbCommand dbCommand = null;
 
-            Task applyException(Exception ex) => this.ApplyFilters(h => h.OnExceptionAsync, dbCommand: dbCommand, exception: ex, source: operation.Source, swallowExceptions: true);
+            Task applyException(Exception ex) => this.ApplyFilters(h => h.OnExceptionAsync, dbCommand: dbCommand, exception: ex, batch: batch, swallowExceptions: true);
 
             try
             {
                 dbCommand = connection.CreateCommand();
 
-                operation.Build(dbCommand);
+                batch.Build(dbCommand);
             }
             catch (Exception ex)
             {
@@ -67,7 +67,7 @@ namespace Jerrycurl.Data.Sessions
                 throw;
             }
 
-            await this.ApplyFilters(h => h.OnCommandCreatedAsync, dbCommand: dbCommand, source: operation.Source).ConfigureAwait(false);
+            await this.ApplyFilters(h => h.OnCommandCreatedAsync, dbCommand: dbCommand, batch: batch).ConfigureAwait(false);
 
             DbDataReader reader = null;
 
@@ -102,7 +102,7 @@ namespace Jerrycurl.Data.Sessions
                     }
                 }
 
-                await this.ApplyFilters(h => h.OnCommandExecutedAsync, dbCommand: dbCommand, source: operation.Source).ConfigureAwait(false);
+                await this.ApplyFilters(h => h.OnCommandExecutedAsync, dbCommand: dbCommand, batch: batch).ConfigureAwait(false);
             }
             finally
             {
@@ -134,11 +134,11 @@ namespace Jerrycurl.Data.Sessions
             return this.connection;
         }
 
-        private async Task ApplyFilters(Func<IFilterAsyncHandler, Func<FilterContext, Task>> action, IDbCommand dbCommand = null, Exception exception = null, object source = null, bool swallowExceptions = false)
+        private async Task ApplyFilters(Func<IFilterAsyncHandler, Func<FilterContext, Task>> action, IDbCommand dbCommand = null, Exception exception = null, IBatch batch = null, bool swallowExceptions = false)
         {
             if (this.filters.Length > 0)
             {
-                FilterContext context = new FilterContext(this.connection, dbCommand, exception, source);
+                FilterContext context = new FilterContext(this.connection, dbCommand, exception, batch);
 
                 await this.ApplyFilters(action, context, swallowExceptions).ConfigureAwait(false);
             }
@@ -156,11 +156,12 @@ namespace Jerrycurl.Data.Sessions
                 {
                     if (!swallowExceptions)
                     {
-                        FilterContext exceptionContext = new FilterContext(context.Connection, context.Command, ex, context.SourceObject);
+                        FilterContext exceptionContext = new FilterContext(context.Connection, context.Command, ex, context.Batch);
 
                         await this.ApplyFilters(h => h.OnExceptionAsync, exceptionContext, swallowExceptions: true).ConfigureAwait(false);
 
-                        throw;
+                        if (!exceptionContext.IsHandled)
+                            throw;
                     }
                 }
             }
