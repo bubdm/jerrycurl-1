@@ -1,7 +1,9 @@
-﻿using Jerrycurl.Mvc;
+﻿using Jerrycurl.Vendors.SqlServer.Metadata;
+#if SQLSERVER_LEGACY
 using System.Data.SqlClient;
-using System.Linq;
-using Jerrycurl.Vendors.SqlServer;
+#else
+using Microsoft.Data.SqlClient;
+#endif
 
 namespace Jerrycurl.Mvc
 {

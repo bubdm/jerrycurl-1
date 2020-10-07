@@ -1,16 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Jerrycurl.Relations.Metadata;
-using Jerrycurl.Relations;
 using Jerrycurl.Collections;
-using System.Linq.Expressions;
-using System.Collections;
-using System.Reflection;
 using Jerrycurl.Data.Metadata;
-using Jerrycurl.Data;
 using Jerrycurl.Data.Queries.Internal.Nodes;
 
 namespace Jerrycurl.Data.Queries.Internal.Builders
@@ -73,7 +66,7 @@ namespace Jerrycurl.Data.Queries.Internal.Builders
                 foreach (MetadataNode node in itemNode.Tree())
                 {
                     IReferenceMetadata metadata = node.GetMetadata<IReferenceMetadata>();
-                    IEnumerable<IReferenceMetadata> properties = metadata?.Properties.Where(m => m.HasFlag(ReferenceMetadataFlags.CandidateKey)) ?? Array.Empty<IReferenceMetadata>();
+                    IEnumerable<IReferenceMetadata> properties = metadata?.Properties.Where(m => m.HasFlag(ReferenceMetadataFlags.PrimaryKey)) ?? Array.Empty<IReferenceMetadata>();
 
                     IList<MetadataNode> keyValues = properties.Select(m => itemNode.FindNode(m)).NotNull().ToList();
 

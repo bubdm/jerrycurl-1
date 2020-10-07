@@ -1,7 +1,4 @@
-﻿using Jerrycurl.Data;
-using Jerrycurl.Data.Metadata;
-using Jerrycurl.Data.Queries;
-using Jerrycurl.Data.Queries.Internal;
+﻿using Jerrycurl.Data.Queries.Internal;
 using Jerrycurl.Data.Queries.Internal.State;
 using Jerrycurl.Relations.Metadata;
 using System;
@@ -9,7 +6,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 
 namespace Jerrycurl.Data.Queries
@@ -32,11 +28,10 @@ namespace Jerrycurl.Data.Queries
             this.schemas = schemas ?? throw new ArgumentNullException(nameof(schemas));
         }
 
-#if NETSTANDARD2_1
         public async IAsyncEnumerable<TItem> ReadAsync<TItem>([EnumeratorCancellation]CancellationToken cancellationToken = default)
         {
             if (this.asyncReader == null)
-                throw new QueryException("Async not available.");
+                throw new QueryException("Async not available. To use async operations, please supply a connection factory returning a DbConnection instance.");
 
             TableIdentity heading = TableIdentity.FromRecord(this.asyncReader);
             ResultState<TItem> state = ResultCache<TItem>.GetResultState(this.schemas, heading);
@@ -44,7 +39,6 @@ namespace Jerrycurl.Data.Queries
             while (await this.asyncReader.ReadAsync(cancellationToken).ConfigureAwait(false))
                 yield return state.Item(this.asyncReader);
         }
-#endif
 
         public IEnumerable<TItem> Read<TItem>()
         {

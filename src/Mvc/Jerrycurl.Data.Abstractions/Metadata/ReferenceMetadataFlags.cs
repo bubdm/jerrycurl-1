@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Jerrycurl.Data.Metadata
 {
@@ -12,6 +8,7 @@ namespace Jerrycurl.Data.Metadata
         None = 0,
         CandidateKey = 1,
         ForeignKey = 2,
-        Key = ForeignKey | CandidateKey,
+        PrimaryKey = 4,
+        Key = ForeignKey | CandidateKey | PrimaryKey,
     }
 }

@@ -1,80 +1,104 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/onendmfb6ywd33je?svg=true)](https://ci.appveyor.com/project/rwredding/jerrycurl)
-[![License LGPLv3](https://img.shields.io/badge/license-LGPLv3-green.svg)](http://www.gnu.org/licenses/lgpl-3.0.html)
-# Jerrycurl - Razor SQL for .NET
-**Jerrycurl** is a lightweight and highly customizable **object-relational mapper** with emphasis on writing elegant and performant **SQL** with **Razor** and **C#**.
-
+[![NuGet](https://img.shields.io/nuget/v/Jerrycurl)](https://nuget.org/packages/Jerrycurl)
+[![Build status](https://ci.appveyor.com/api/projects/status/onendmfb6ywd33je/branch/master?svg=true)](https://ci.appveyor.com/project/rwredding/jerrycurl/branch/master)
+[![Test status](https://img.shields.io/appveyor/tests/rwredding/jerrycurl/master)](https://ci.appveyor.com/project/rwredding/jerrycurl/branch/master/tests)
+[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/jerrycurl-mvc/community)
+# Jerrycurl - Razor-powered ORM for .NET
+**Jerrycurl** is a free and lightweight **ORM for .NET** that focuses on elegant and type-safe **SQL** written with **Razor syntax**.
 ```sql
-@result MyShop.Data.Views.Orders.OrderUnsentInvoiceView
-@model MyShop.Data.Models.CustomerParams
-
+-- Queries/Customers/GetStats.cssql
+@result CustomerStatsView
+@model CustomerFilter
 @project Order o
-@project Customer c
 
 SELECT
-    @o.Col(m => m.InvoiceNumber)        AS @R.Prop(m => m.InvoiceNumber),
-    @o.Col(m => m.Completed)            AS @R.Prop(m => m.InvoiceDate),
-    @c.Col(m => m.Email)                AS @R.Prop(m => m.CustomerEmail),
-    @c.Col(m => m.Address)              AS @R.Prop(m => m.CustomerAddress)
+    @R.Star(),
+    @R.Star(m => m.Address),
+    (
+        SELECT  COUNT(*)
+        FROM    @o.Tbl()
+        WHERE   @o.Col(m => m.CustomerId) = @R.Col(m => m.Id)
+    )   AS @R.Prop(m => m.NumberOfOrders)
 FROM
-    @o.Tbl()
-INNER JOIN
-    @c.Tbl() ON @c.Col(m => m.Id) = @o.Col(m => m.CustomerId)
+    @R.Tbl()
+LEFT JOIN
+    @R.Tbl(m => m.Address) ON @R.Col(m => m.Address.Id) = @R.Col(m => m.AddressId)
 WHERE
-    @o.Col(m => m.CustomerId) = @M.Par(m => m.CustomerId)
-    AND
-    @o.Col(m => m.Sent) IS NULL
-    AND
-    @o.Col(m => m.Completed) IS NOT NULL
+    @R.Col(m => m.CreatedDate) >= @M.Par(m => m.CreatedAfter)
 ORDER BY
-    @o.Col(m => m.Completed) ASC
+    @R.Col(m => m.CreatedDate) DESC
+```
+
+It allows you to build robust data access layers around ASP.NET-like **MVC** and **CQS** conventions that organizes your code into models, queries, commands and **accessors**.
+
+```csharp
+// Accessors/CustomersAccessor.cs
+public class CustomersAccessor : Accessor
+{
+    public IList<CustomerStatsView> GetStats(DateTime createdAfter)
+    {
+        var filter = new CustomerFilter
+        {
+            CreatedAfter = createdAfter,
+        };
+        
+        return this.Query<CustomerStatsView>(model: filter);
+    }
+}
 ```
 
 ## Features
-* Beautiful and injection-safe Razor syntax with SQL and strongly typed C#
-* Blazingly fast queries with `one-to-one`, `one-to-none`, `one-to-many`, `many-to-many` and `self-join` support
-* Simple batch generation with Razor `@foreach`
-* Reusable subqueries and subcommands with Razor *partials* and *templates*
-* Easily maintainable, ASP.NET-like projects with [MVC](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller)
-* High decoupling with [command-query separation](https://en.wikipedia.org/wiki/Command%E2%80%93query_separation)
-* JSON support with `Newtonsoft.Json` or `System.Text.Json`
-* Integration with Entity Framework Core models
-* Modern language features with .NET Standard 2.0 and 2.1
-* ...and more
+* [Official support](https://nuget.org/packages/?q=Jerrycurl.Vendors) for SQL Server, PostgreSQL, MySQL, Oracle and SQLite
+* [CLI tool](https://nuget.org/packages/dotnet-jerry) to easily generate classes from your database schema
+* Extensive collection of type-safe Razor extensions for all boilerplate SQL
+* Single **queries** that map complete object graphs of any [cardinality](https://en.wikipedia.org/wiki/Cardinality_(data_modeling))
+* Batchable **commands** through simple `@foreach` expressions
+* [High performance](https://github.com/rhodosaur/RawDataAccessBencher/blob/master/Results/20191115_jerrycurl.txt) and support for all operations synchronously or asynchronously
+* Organized, ASP.NET-like project conventions with [MVC](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller)
+* Native [command-query separation](https://en.wikipedia.org/wiki/Command%E2%80%93query_separation) suitable for [ACID](https://en.wikipedia.org/wiki/ACID) or [BASE](https://en.wikipedia.org/wiki/Eventual_consistency)/[CQRS](https://docs.microsoft.com/en-us/azure/architecture/patterns/cqrs) scenarios
+* JSON support through `Newtonsoft.Json` or `System.Text.Json`
+* Integration with existing Entity Framework Core models
+* Modern language features with .NET Standard 2.1 and C# 8
+* Free and [available via NuGet](https://www.nuget.org/packages?q=Jerrycurl)
 
-To learn more about Jerrycurl and how to get started, read [our official docs](https://jerrycurl.net/docs) or check our [sample repo](https://github.com/rwredding/jerrycurl-sample).
+To learn more about Jerrycurl and how to get started, read [our official docs](https://jerrycurl.net/documentation) or check our [samples repo](https://github.com/rwredding/jerrycurl-samples).
 
 ## Building from source
-Jerrycurl can be built on any OS supported by .NET Core and included in this repository is a build script that performs all build related tasks.
+Jerrycurl can be built on [any OS supported by .NET Core](https://docs.microsoft.com/en-us/dotnet/core/install/dependencies) and included in this repository is a [script](build.ps1) that performs all build-related tasks.
 
 ### Prerequisites
 * .NET Core SDK 3.0
 * .NET Core Runtime 2.1+ / 3.0 (to run tests)
 * PowerShell 5.0+ (PowerShell Core on Linux/macOS) 
 * Visual Studio 2019 (16.3+) (optional)
-* Docker (optional - for vendor testing)
+* Docker (optional - for live database testing)
 
-### Clone and Build
+### Clone, Build and Test
 Clone the repository and run our build script from PowerShell.
 ```powershell
 PS> git clone https://github.com/rwredding/jerrycurl
 PS> cd jerrycurl
 PS> .\build.ps1 [-NoTest] [-NoPack]
 ```
-This runs the `Restore`, `Clean`, `Build`, `[Test]` and `[Pack]` targets on `jerrycurl.sln`. Each target can also be run manually in Visual Studio if preferred.
 
-> Packaged `.nupkgs` are placed in `/artifacts/packages`.
+This runs the `Restore`, `Clean`, `Build`, `[Test]` and `[Pack]` targets on `jerrycurl.sln` and places any packaged `.nupkg` in the `/artifacts/packages` folder. Each target can also be run manually in Visual Studio if preferred.
 
-### Test
-The script above runs most tests, but will **skip those** that require a live running database server. To enable these you can run our [`docker compose` script](test/tools/boot-dbs.ps1) with PowerShell to boot up instances of our supported databases.
+By default, the `Test` target skips any test that requires live running database server. To help you to include these, you can use our [`docker compose` script](test/tools/boot-dbs.ps1) to boot up instances of our supported databases.
 
 ```powershell
 PS> .\test\tools\boot-dbs.ps1 up sqlserver,mysql,postgres,oracle
 ```
-Please allow ~30 seconds for the databases to be ready after which you can re-run your tests.
+
+Please allow ~60 seconds for the databases to be ready after which you can re-run `build.ps1`, which will then automatically target the included databases instances. When done, you can tear everything down again.
+
+```powershell
+PS> .\test\tools\boot-dbs.ps1 down sqlserver,mysql,postgres,oracle
+```
+
+> If you already have an empty database running that can be used for testing, you can manually specify its connection string in the environment variable `JERRY_SQLSERVER_CONN`, `JERRY_MYSQL_CONN`, `JERRY_POSTGRES_CONN` or `JERRY_ORACLE_CONN`.
 
 > Oracle Database requires that you are logged into Docker and have accepted their [terms of service](https://hub.docker.com/_/oracle-database-enterprise-edition).
 
-> If you already have an empty database running that can be used for testing, you can manually specify its connection string in the environment variable `JERRY_SQLSERVER_CONN`, `JERRY_MYSQL_CONN`, `JERRY_POSTGRES_CONN` or `JERRY_ORACLE_CONN`.
+
 
 ## License
 Copyright © 2019 AC Dancode

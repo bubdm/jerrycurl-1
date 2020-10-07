@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using Jerrycurl.Data.Metadata.Annotations;
 using Jerrycurl.Relations;
 
@@ -10,6 +8,8 @@ namespace Jerrycurl.Data.Test.Models
     {
         [Key]
         public int BigKey { get; set; }
+        [Key(IsPrimary = false)]
+        public int? NonPrimaryKey { get; set; }
         public int Value { get; set; }
         public string Value2 { get; set; }
         public int ReadOnly { get; }
@@ -27,6 +27,8 @@ namespace Jerrycurl.Data.Test.Models
             public int SubKey { get; set; }
             [Ref]
             public int BigKey { get; set; }
+            [Ref]
+            public int? NonPrimaryKey { get; set; }
             public int Value { get; set; }
         }
     }

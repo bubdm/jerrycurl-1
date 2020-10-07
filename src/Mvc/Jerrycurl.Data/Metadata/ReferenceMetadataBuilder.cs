@@ -1,14 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Jerrycurl.Data.Metadata;
-using Jerrycurl.Relations;
 using Jerrycurl.Relations.Metadata;
-using Jerrycurl.Collections;
-using System.Threading;
 using Jerrycurl.Data.Metadata.Annotations;
 
 namespace Jerrycurl.Data.Metadata
@@ -77,7 +71,9 @@ namespace Jerrycurl.Data.Metadata
         {
             ReferenceMetadataFlags flags = ReferenceMetadataFlags.None;
 
-            if (parent.Relation.Annotations.OfType<KeyAttribute>().Any())
+            if (parent.Relation.Annotations.OfType<KeyAttribute>().Any(k => k.IsPrimary))
+                flags |= ReferenceMetadataFlags.PrimaryKey;
+            else if (parent.Relation.Annotations.OfType<KeyAttribute>().Any())
                 flags |= ReferenceMetadataFlags.CandidateKey;
 
             if (parent.Relation.Annotations.OfType<RefAttribute>().Any())

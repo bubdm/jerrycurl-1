@@ -16,7 +16,6 @@ namespace Jerrycurl.Mvc
     {
         public AccessorContext Context { get; set; }
 
-#if NETSTANDARD2_1
         /// <summary>
         /// Executes an asynchronous Razor SQL query with a specified model and returns a single, continuous, unbuffered list from its result sets.
         /// </summary>
@@ -85,7 +84,6 @@ namespace Jerrycurl.Mvc
 
             return handler.EnumerateAsync(queries, cancellationToken);
         }
-#endif
 
         /// <summary>
         /// Executes a Razor SQL query with a specified model and returns a single, continuous, unbuffered list from its result sets.
@@ -293,8 +291,8 @@ namespace Jerrycurl.Mvc
         /// <param name="configure">A method for configuring command options.</param>
         /// <param name="commandName">The command name to locate the Razor page by. Defaults to the name of the calling method.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
-        protected async Task ExecuteAsync(object model = default, Action<SqlOptions> configure = null, [CallerMemberName]string commandName = null, CancellationToken cancellationToken = default)
-            => await this.ExecuteAsync<object>(model, configure, commandName, cancellationToken).ConfigureAwait(false);
+        protected Task ExecuteAsync(object model = default, Action<SqlOptions> configure = null, [CallerMemberName]string commandName = null, CancellationToken cancellationToken = default)
+            => this.ExecuteAsync<object>(model, configure, commandName, cancellationToken);
 
         /// <summary>
         /// Executes an asynchronous Razor SQL command with the specified model and updates the model from its resulting data set.
@@ -332,7 +330,7 @@ namespace Jerrycurl.Mvc
         private IProcResult ExecuteAndGetResult(string procName, object model, ProcArgs args)
         {
             IProcLocator locator = this.Context?.Locator ?? new ProcLocator();
-            IProcEngine engine = this.Context?.Engine ?? new ProcEngine();
+            IProcEngine engine = this.Context?.Engine ?? new ProcEngine(null);
 
             PageDescriptor descriptor = locator.FindPage(procName, this.GetType());
             ProcFactory factory = engine.Proc(descriptor, args);

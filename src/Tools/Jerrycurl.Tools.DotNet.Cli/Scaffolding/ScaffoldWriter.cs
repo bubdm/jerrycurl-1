@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Jerrycurl.CodeAnalysis;
-using Jerrycurl.Text;
 using Jerrycurl.Tools.Scaffolding.Model;
 
 namespace Jerrycurl.Tools.DotNet.Cli.Scaffolding
@@ -20,9 +16,8 @@ namespace Jerrycurl.Tools.DotNet.Cli.Scaffolding
                 {
                     CSharpWriter csharp = new CSharpWriter(stream);
 
-                    await csharp.WriteImportAsync("System");
+                    await csharp.WriteImportAsync("global::System");
                     await csharp.WriteImportAsync("global::Jerrycurl.Data.Metadata.Annotations");
-                    await csharp.WriteImportAsync("global::Jerrycurl.Mvc.Metadata.Annotations");
                     await csharp.WriteLineAsync();
 
                     foreach (var g in file.Objects.GroupBy(t => t.Namespace).OrderBy(g => g.Key))

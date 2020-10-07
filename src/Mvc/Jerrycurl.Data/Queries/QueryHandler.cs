@@ -2,18 +2,13 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
 using System.Threading.Tasks;
-using Jerrycurl.Data;
-using Jerrycurl.Data.Metadata;
-using Jerrycurl.Data.Queries;
 using Jerrycurl.Collections;
-using Jerrycurl.Relations.Metadata;
 using System.Data.Common;
 using System.Threading;
 using Jerrycurl.Data.Queries.Internal;
 using System.Runtime.CompilerServices;
+using Jerrycurl.Data.Sessions;
 
 namespace Jerrycurl.Data.Queries
 {
@@ -37,24 +32,24 @@ namespace Jerrycurl.Data.Queries
 
             ResultAdapter<TItem> adapter = new ResultAdapter<TItem>(this.Options.Schemas);
 
-            using (AdoConnection connection = new AdoConnection(this.Options))
+            using SyncSession connection = new SyncSession(this.Options);
+
+            foreach (QueryData queryData in queries.NotNull())
             {
-                foreach (QueryData queryData in queries.NotNull())
-                {
-                    AdoHelper helper = new AdoHelper(queryData);
+                Query builder = new Query(queryData);
 
-                    if (string.IsNullOrWhiteSpace(queryData.QueryText))
-                        continue;
+                if (string.IsNullOrWhiteSpace(queryData.QueryText))
+                    continue;
 
-                    foreach (IDataReader dataReader in connection.Execute(helper))
-                        adapter.AddResult(dataReader);
-                }
+                foreach (IDataReader dataReader in connection.Execute(builder))
+                    adapter.AddResult(dataReader);
             }
 
             return adapter.ToList();
         }
 
-        public async Task<IList<TItem>> ListAsync<TItem>(QueryData query, CancellationToken cancellationToken = default) => await this.ListAsync<TItem>(new[] { query }, cancellationToken);
+        public Task<IList<TItem>> ListAsync<TItem>(QueryData query, CancellationToken cancellationToken = default) => this.ListAsync<TItem>(new[] { query }, cancellationToken);
+
         public async Task<IList<TItem>> ListAsync<TItem>(IEnumerable<QueryData> queries, CancellationToken cancellationToken = default)
         {
             if (queries == null)
@@ -65,34 +60,22 @@ namespace Jerrycurl.Data.Queries
 
             ResultAdapter<TItem> adapter = new ResultAdapter<TItem>(this.Options.Schemas);
 
-#if NETSTANDARD2_1
-            await
-#endif
-            using AdoConnection connection = new AdoConnection(this.Options);
+            await using AsyncSession connection = new AsyncSession(this.Options);
 
             foreach (QueryData queryData in queries.NotNull())
             {
-                AdoHelper helper = new AdoHelper(queryData);
+                Query builder = new Query(queryData);
 
                 if (string.IsNullOrWhiteSpace(queryData.QueryText))
                     continue;
 
-#if NETSTANDARD2_0
-                    await connection.ExecuteAsync(helper, async (r) =>
-                    {
-                        await adapter.AddResultAsync(r, cancellationToken).ConfigureAwait(false);
-
-                    }, cancellationToken).ConfigureAwait(false);
-#elif NETSTANDARD2_1
-                await foreach (DbDataReader dataReader in connection.ExecuteAsync(helper, cancellationToken))
-                    await adapter.AddResultAsync(dataReader, cancellationToken);
-#endif
+                await foreach (DbDataReader dataReader in connection.ExecuteAsync(builder, cancellationToken).ConfigureAwait(false))
+                    await adapter.AddResultAsync(dataReader, cancellationToken).ConfigureAwait(false);
             }
 
             return adapter.ToList();
         }
 
-#if NETSTANDARD2_1
         public IAsyncEnumerable<QueryReader> EnumerateAsync(QueryData query, CancellationToken cancellationToken = default) => this.EnumerateAsync(query, cancellationToken);
         public async IAsyncEnumerable<QueryReader> EnumerateAsync(IEnumerable<QueryData> queries, [EnumeratorCancellation]CancellationToken cancellationToken = default)
         {
@@ -102,19 +85,16 @@ namespace Jerrycurl.Data.Queries
             if (this.Options.Schemas == null)
                 throw new InvalidOperationException("No schema builder found.");
 
-#if NETSTANDARD2_1
-            await
-#endif
-            using AdoConnection connection = new AdoConnection(this.Options);
+            await using AsyncSession connection = new AsyncSession(this.Options);
 
             foreach (QueryData queryData in queries.NotNull())
             {
-                AdoHelper helper = new AdoHelper(queryData);
+                Query query = new Query(queryData);
 
                 if (string.IsNullOrWhiteSpace(queryData.QueryText))
                     continue;
 
-                await foreach (DbDataReader dataReader in connection.ExecuteAsync(helper, cancellationToken))
+                await foreach (DbDataReader dataReader in connection.ExecuteAsync(query, cancellationToken).ConfigureAwait(false))
                     yield return new QueryReader(dataReader, this.Options.Schemas);
             }
         }
@@ -122,13 +102,12 @@ namespace Jerrycurl.Data.Queries
         public IAsyncEnumerable<TItem> EnumerateAsync<TItem>(QueryData query, CancellationToken cancellationToken = default) => this.EnumerateAsync<TItem>(new[] { query }, cancellationToken);
         public async IAsyncEnumerable<TItem> EnumerateAsync<TItem>(IEnumerable<QueryData> queries, [EnumeratorCancellation]CancellationToken cancellationToken = default)
         {
-            await foreach (QueryReader queryReader in this.EnumerateAsync(queries, cancellationToken))
+            await foreach (QueryReader queryReader in this.EnumerateAsync(queries, cancellationToken).ConfigureAwait(false))
             {
-                await foreach (TItem item in queryReader.ReadAsync<TItem>(cancellationToken))
+                await foreach (TItem item in queryReader.ReadAsync<TItem>(cancellationToken).ConfigureAwait(false))
                     yield return item;
             }
         }
-#endif
 
         public IEnumerable<TItem> Enumerate<TItem>(QueryData query) => this.Enumerate<TItem>(new[] { query });
         public IEnumerable<TItem> Enumerate<TItem>(IEnumerable<QueryData> queries) => this.Enumerate(queries).SelectMany(r => r.Read<TItem>());
@@ -142,16 +121,16 @@ namespace Jerrycurl.Data.Queries
             if (this.Options.Schemas == null)
                 throw new InvalidOperationException("No schema builder found.");
 
-            using AdoConnection connection = new AdoConnection(this.Options);
+            using SyncSession connection = new SyncSession(this.Options);
 
             foreach (QueryData queryData in queries.NotNull())
             {
-                AdoHelper helper = new AdoHelper(queryData);
+                Query query = new Query(queryData);
 
                 if (string.IsNullOrWhiteSpace(queryData.QueryText))
                     continue;
 
-                foreach (IDataReader reader in connection.Execute(helper))
+                foreach (IDataReader reader in connection.Execute(query))
                     yield return new QueryReader(reader, this.Options.Schemas);
             }
         }

@@ -10,13 +10,14 @@ using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Jerrycurl.Test
 {
     public class DatabaseHelper
     {
+        public const string TestDbConnectionString = "DATA SOURCE=testdb.db";
+
         public static DatabaseHelper Default { get; } = new DatabaseHelper();
 
         public SchemaStore Schemas { get; set; }
@@ -47,7 +48,7 @@ namespace Jerrycurl.Test
         {
             return new QueryOptions()
             {
-                ConnectionFactory = () => new ProfilingConnection(new SqliteConnection("DATA SOURCE=testdb.db")),
+                ConnectionFactory = () => new ProfilingConnection(new SqliteConnection(TestDbConnectionString)),
                 Schemas = schemas ?? this.Schemas,
             };
         }
@@ -56,7 +57,7 @@ namespace Jerrycurl.Test
         {
             return new CommandOptions()
             {
-                ConnectionFactory = () => new ProfilingConnection(new SqliteConnection("DATA SOURCE=testdb.db")),
+                ConnectionFactory = () => new ProfilingConnection(new SqliteConnection(TestDbConnectionString)),
                 Filters = filters ?? Array.Empty<IFilter>(),
             };
         }
@@ -78,11 +79,9 @@ namespace Jerrycurl.Test
 
         public IEnumerable<TItem> Enumerate<TItem>(params SqliteTable[] tables) => this.Queries.Enumerate<TItem>(tables.Select(t => t.ToQuery()));
         public IEnumerable<TItem> Enumerate<TItem>(params QueryData[] queries) => this.Queries.Enumerate<TItem>(queries);
-#if NETCOREAPP3_0
         public IAsyncEnumerable<TItem> EnumerateAsync<TItem>(params SqliteTable[] tables) => this.Queries.EnumerateAsync<TItem>(tables.Select(t => t.ToQuery()));
         public IAsyncEnumerable<TItem> EnumerateAsync<TItem>(params QueryData[] queries) => this.Queries.EnumerateAsync<TItem>(queries);
         public IAsyncEnumerable<TItem> EnumerateAsync<TItem>(string sql) => this.Queries.EnumerateAsync<TItem>(new QueryData() { QueryText = sql });
-#endif
 
         public Relation Relation<T>(T model = default, params string[] heading)
         {

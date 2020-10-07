@@ -1,20 +1,13 @@
-﻿using Jerrycurl.Mvc;
-using Jerrycurl.Mvc.Test.Conventions.Accessors;
+﻿using Jerrycurl.Mvc.Test.Conventions.Accessors;
 using Jerrycurl.Mvc.Test.Conventions2.NoDomain;
-using Jerrycurl.Mvc.Test.Conventions2.NoDomain.Queries;
 using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Jerrycurl.Mvc.Test
 {
     public class EngineTests
     {
         private readonly ProcLocator locator = new ProcLocator();
-        private readonly ProcEngine engine = new ProcEngine();
+        private readonly ProcEngine engine = new ProcEngine(null);
 
         public void Page_CanResolveFactory_WithoutDomain()
         {
@@ -36,7 +29,6 @@ namespace Jerrycurl.Mvc.Test
 
             descriptor.ShouldNotBeNull();
             descriptor.DomainType.ShouldBeNull();
-
 
             Should.Throw<ProcExecutionException>(() => this.engine.Proc(descriptor, args));
         }

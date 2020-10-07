@@ -1,19 +1,15 @@
 ﻿using Jerrycurl.Data.Commands;
-using Jerrycurl.Mvc;
 using Jerrycurl.Mvc.Test.Conventions.Accessors;
 using Shouldly;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Jerrycurl.Mvc.Test
 {
     public class BatchingTests
     {
         private readonly ProcLocator locator = new ProcLocator();
-        private readonly ProcEngine engine = new ProcEngine();
+        private readonly ProcEngine engine = new ProcEngine(null);
 
         public void SqlBuffer_Batching_HasCorrectValue()
         {
