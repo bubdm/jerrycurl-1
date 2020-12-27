@@ -59,7 +59,7 @@ class BlogView : Blog
 ```
 
 #### Command/query layer
-Commands and queries are written with our customized Razor SQL syntax and uses `.cssql` as extension, which ensures their compilation into the project in the usual build process. They are placed in either the `Queries` or `Commands` folders based on whether they *read* or *write* data in the underlying database.
+Commands and queries are written with our customized Razor SQL syntax and uses the `.cssql` extension, which ensures that they are included in the usual build process. They are placed in either the `Queries` or `Commands` folders based on whether they *read* or *write* data in the underlying database.
 ```
 -- Queries/Blogs/GetAll.cssql
 @result BlogView
@@ -119,24 +119,24 @@ class BlogsDomain : IDomain
 ```
 
 #### Usage
-To use your newly minted accessor, simply fire up an instance and call one of its methods.
+To use your newly minted accessor, you need nothing more then to simply fire up an instance, and get a-queryin'.
 
 ```csharp
 var accessor = new BlogsAccessor();
 var blogs = accessor.GetAll();
 ```
 
-To learn more about Jerrycurl and how to get started, visit [our official site](https://jerrycurl.net) or check our [samples repo](https://github.com/rwredding/jerrycurl-samples).
+To learn more about Jerrycurl and how to get started, visit [our official site](https://jerrycurl.net).
 
 ## Building from source
 Jerrycurl can be built on [any OS supported by .NET Core](https://docs.microsoft.com/en-us/dotnet/core/install/dependencies) and included in this repository is a [PowerShell script](build.ps1) that performs all build-related tasks.
 
 ### Prerequisites
-* .NET Core SDK 5.0
-* .NET Core Runtime 2.1 / 3.1 (to run tests)
-* PowerShell 5.0+ (PowerShell Core on Linux/macOS) 
-* Visual Studio 2019 (latest) (optional)
-* Docker (optional - for running live database tests)
+* .NET Core SDK 5.0 (to build)
+* .NET Core Runtime 2.1 / 3.1 (to test)
+* PowerShell 5.0+ (PowerShell Core on Linux/macOS)
+* Visual Studio 2019 (optional)
+* Docker (to live test databases) (optional)
 
 ### Clone, Build and Test
 Clone the repository and run our build script from PowerShell.
