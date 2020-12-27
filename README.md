@@ -27,13 +27,11 @@ Generated 7 tables and 21 columns in Database.cs.
 ```
 To learn more about the CLI, type in `jerry help`.
 
-### MVC design
+### MVC setup
 Jerrycurl features a variant of the model-view-controller pattern made specifically for the relational world and its most prized asset: the SQL language. Each project consists of a selection of models, accessors and queries/commands, as per the CQS pattern.
 
 #### Model layer
-The model is a collection of simple data records and provides the structure for interacting with data and metadata on either the object side or the database side. It usually combines a representation of the database in a familiar class-per-table fashion along with whatever customized data views you might need.
-
-You can create views through composition with support for both unary properties (one-to-one mapping) or n-ary lists (one-to-many mapping).
+The model is rooted in the classes we generated with the CLI above and represented in the familiar class-per-table way.
 
 ```csharp
 // Database.cs
@@ -47,6 +45,9 @@ class Blog
 }
 //...
 ```
+
+You can use and combine these classes in any way you want to create customized views. This is done with simple composition and supports both unary properties (one-to-one mapping) or n-ary lists (one-to-many mapping).
+
 ```csharp
 // Views/Blogs/BlogView.cs
 class BlogView : Blog
@@ -57,7 +58,9 @@ class BlogView : Blog
 ```
 
 #### Command/query layer
-Commands and queries are written with our customized Razor SQL syntax and uses the `.cssql` extension, which ensures that they are included in the usual build process. They are placed in either the `Queries` or `Commands` folders based on whether they *read* or *write* data in the underlying database.
+To dive into the command/query layer, we use *projections* the models above, which power customized Razor SQL syntax. Each query or command is represented a a file with the `.cssql` extension, which ensures that they are included in the usual build process.
+
+They are placed in either the `Queries` or `Commands` folders based on whether they *read* or *write* data in the underlying database.
 ```
 -- Queries/Blogs/GetAll.cssql
 @result BlogView
@@ -90,7 +93,7 @@ WHERE       @R.Col(m => m.CreatedOn) >= @M.Par(m => m.FromDate)
 ```
 
 #### Accessor (controller) layer
-Accessors provide the bridge between the model and command/query layer by passing *input data* to an underlying `.cssql` file and returning the *output data* as either new objects (queries) or modifications to existing objects (commands). 
+Accessors prepare *input data* for `@model` and executes an associated Razor query or command using one of its base methods. This invokes the MVC engine which in turn generates the final SQL statements, dispatches it to the database and returns its output as either a series of new `@result` objects (queries) or modifications to existing `@model` data (commands).
 ```csharp
 // Accessors/BlogsAccessor.cs
 public class BlogsAccessor : Accessor
