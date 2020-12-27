@@ -2,9 +2,14 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/aihogw33ef50go9r?svg=true)](https://ci.appveyor.com/project/rhodosaur/jerrycurl/branch/master)
 [![Test status](https://img.shields.io/appveyor/tests/rhodosaur/jerrycurl/dev)](https://ci.appveyor.com/project/rhodosaur/jerrycurl/branch/master/tests)
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/jerrycurl-mvc/community)
-# Jerrycurl
 
-**Jerrycurl** is an object-relational mapper and MVC framework that allows developers to build data access for .NET using tools and features inspired by those of ASP.NET MVC.
+---
+
+![Jerrycurl](gfx/icon.png)
+
+## Jerrycurl - Object-relational mapper and MVC framework for .NET
+
+**Jerrycurl** is an object-relational mapper and MVC framework that allows developers to build data access for .NET using tools and features inspired by those of ASP.NET.
 
 ### Installation
 Jerrycurl can be installed into any [SDK-style](https://docs.microsoft.com/en-us/nuget/resources/check-project-format) C# project from NuGet. Its main package contains support for compiling `.cssql` files into your project and executing them via the built-in MVC engine. Additionally you can install support for [one of our supported databases](https://nuget.org/packages?q=Jerrycurl.Vendors) from NuGet as well.
