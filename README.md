@@ -7,12 +7,11 @@
 
 ![Jerrycurl](gfx/icon.png)
 
-## Jerrycurl - Object-relational mapper and MVC framework for .NET
-
+## Jerrycurl - High-performance ORM and MVC framework for .NET
 **Jerrycurl** is an object-relational mapper and MVC framework that allows developers to build data access for .NET using tools and features inspired by those of ASP.NET.
 
 ### Installation
-Jerrycurl can be installed into any [SDK-style](https://docs.microsoft.com/en-us/nuget/resources/check-project-format) C# project from NuGet. Its main package contains support for compiling `.cssql` files into your project and executing them via the built-in MVC engine. Additionally you can install support for [one of our supported databases](https://nuget.org/packages?q=Jerrycurl.Vendors) from NuGet as well.
+Jerrycurl is available on NuGet and can be installed into any [SDK-style](https://docs.microsoft.com/en-us/nuget/resources/check-project-format) C# project. Its main package contains support for compiling `.cssql` files into your project and executing them via the built-in MVC engine. Additionally you can install support for [one of our supported databases](https://nuget.org/packages?q=Jerrycurl.Vendors) from NuGet as well.
 
 ```shell
 > dotnet add package Jerrycurl
@@ -20,12 +19,9 @@ Jerrycurl can be installed into any [SDK-style](https://docs.microsoft.com/en-us
 ```
 
 #### Tooling
-If you want to generate a ready-to-go object model from your database, install our [CLI](https://www.nuget.org/packages/dotnet-jerry/) from NuGet.
+You can get started by generating an object model from your database by installing our [CLI](https://www.nuget.org/packages/dotnet-jerry/).
 ```shell
 > dotnet tool install --global dotnet-jerry
-You can invoke the tool using the following command: jerry
-Tool 'dotnet-jerry' (version '1.1.0') was successfully installed.
-
 > jerry scaffold -v sqlserver -c "SERVER=.;DATABASE=blogdb;TRUSTED_CONNECTION=true" -ns BlogDb.Database
 Connecting to database 'blogdb'...
 Generating...
@@ -34,11 +30,12 @@ Generated 7 tables and 21 columns in Database.cs.
 To learn more about the CLI, type in `jerry help`.
 
 ### MVC design
-Like ASP.NET, Jerrycurl features a design process that uses variant of the model-view-controller pattern made for the relational world. Each project comprises a selection
-of models, accessors and procedures which are further grouped into either queries or commands, as per the CQS pattern.
+Jerrycurl features a design process that uses variant of the model-view-controller pattern made specifically for the relational world and SQL language. Each project comprises a selection of models, accessors and queries/commands, as per the CQS pattern.
 
 #### Model layer
-The model layer is a collection of simple data records and provides the structure for interacting with data and metadata on either the object side or the database side. It usually combined a representation of the database design in a familiar class-per-table manner along with customized views of different subsets of this data.
+The model layer is a collection of simple data records and provides the structure for interacting with data and metadata on either the object side or the database side. It usually combines a representation of the database in a familiar class-per-table fashion along with whatever customized data views you might need.
+
+You can create views through composition with support for both unary properties (one-to-one mapping) or n-ary lists (one-to-many mapping).
 
 ```csharp
 // Database.cs
@@ -50,32 +47,37 @@ class Blog
     public string Title { get; set; }
     public DateTime CreatedOn { get; set; }
 }
+//...
 ```
 ```csharp
-// Views/Movies/MovieTaglineView.cs
-class MovieTaglineView : Movie
+// Views/Blogs/BlogView.cs
+class BlogView : Blog
 {
-    public string Tagline { get; set; }
-}
-```
-```csharp
-// Views/Movies/MovieRolesView.cs
-class MovieRolesView : Movie
-{
-    public IList<MovieRole> Roles { get; set; }
+    public BlogAuthor Author { get; set; }
+    public IList<BlogPost> Posts { get; set; }
 }
 ```
 
 #### Command/query layer
-Commands and queries are written with our customized Razor SQL syntax and placed in `.cssql` files. They are placed in either the `Queries` or `Commands` folders based on whether they *read* or *write* data in the underlying database.
+Commands and queries are written with our customized Razor SQL syntax and saved in your project with the `.cssql` extension which includes them as build targets for our Razor code generator. They are placed in either the `Queries` or `Commands` folders based on whether they *read* or *write* data in the underlying database.
 ```
 -- Queries/Blogs/GetAll.cssql
-@result Blog
+@result BlogView
 @model BlogFilter
+@{
+    var p = R.Open(m => m.Posts);
+}
 
-SELECT     @R.Star()
-FROM       @R.Tbl()
-WHERE      @R.Col(m => m.CreatedOn) >= @M.Par(m => m.FromDate)
+SELECT      @R.Star(),
+            @R.Star(m => m.Author)
+INNER JOIN  @R.Tbl(m => m.Author) ON @R.Col(m => m.Author.BlogId) = @R.Col(m => m.Id)
+FROM        @R.Tbl()
+WHERE       @R.Col(m => m.CreatedOn) >= @M.Par(m => m.FromDate)
+
+SELECT      @p.Star()
+FROM        @p.Tbl()
+INNER JOIN  @R.Tbl() ON @R.Col(m => m.Id) = @p.Col(m => m.BlogId)
+WHERE       @R.Col(m => m.CreatedOn) >= @M.Par(m => m.FromDate)
 ```
 ```
 -- Commands/Movies/AddBlogs.cssql
@@ -95,8 +97,8 @@ Accessors provide the bridge between the model and command/query layer by passin
 // Accessors/BlogsAccessor.cs
 public class BlogsAccessor : Accessor
 {
-    public IList<Blog> GetAll(DateTime fromDate) // -> Queries/Blogs/GetAll.cssql
-        => this.Query<Blog>(model: new BlogFilter { FromDate = fromDate });
+    public IList<BlogView> GetAll(DateTime fromDate) // -> Queries/Blogs/GetAll.cssql
+        => this.Query<BlogView>(model: new BlogFilter { FromDate = fromDate });
     
     public void AddBlogs(IList<Blog> newBlogs) // -> Commands/Blogs/AddBlogs.cssql
         => this.Execute(model: newMovies);
@@ -104,7 +106,7 @@ public class BlogsAccessor : Accessor
 ```
 
 #### Domain (application) layer
-A domain is created in a namespace parent to that of the accessor layer and presents a single, shared configuration for all operations in your project.
+A domain should be created in a parent namespace and presents a shared place for adding the requires configuration for all associated commands or queries executions.
 ```csharp
 // BlogsDomain.cs
 class BlogsDomain : IDomain
@@ -114,6 +116,14 @@ class BlogsDomain : IDomain
         options.UseSqlServer("SERVER=.;DATABASE=blogdb;TRUSTED_CONNECTION=true");
     }
 }
+```
+
+#### Usage
+To use your newly minted accessor, simply fire up an instance and call one of its methods.
+
+```csharp
+var accessor = new BlogsAccessor();
+var blogs = accessor.GetAll();
 ```
 
 To learn more about Jerrycurl and how to get started, visit [our official site](https://jerrycurl.net) or check our [samples repo](https://github.com/rwredding/jerrycurl-samples).
