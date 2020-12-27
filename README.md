@@ -8,7 +8,7 @@
 ![Jerrycurl](gfx/icon.png)
 
 ## Jerrycurl - High-performance ORM and MVC framework for .NET
-**Jerrycurl** is an object-relational mapper and MVC framework that allows developers to build data access for .NET using tools and features inspired by those of ASP.NET.
+**Jerrycurl** is an object-relational mapper, MVC framework and Razor SQL implementation that allows developers to build data access for .NET using tools and features inspired by those of ASP.NET.
 
 ### Installation
 Jerrycurl is available on NuGet and can be installed into any [SDK-style](https://docs.microsoft.com/en-us/nuget/resources/check-project-format) C# project. Its main package contains support for compiling `.cssql` files into your project and executing them via the built-in MVC engine. Additionally you can install support for [one of our supported databases](https://nuget.org/packages?q=Jerrycurl.Vendors) from NuGet as well.
@@ -19,7 +19,7 @@ Jerrycurl is available on NuGet and can be installed into any [SDK-style](https:
 ```
 
 #### Tooling
-You can get started by generating an object model from your database by installing our [CLI](https://www.nuget.org/packages/dotnet-jerry/).
+You can generate a basic object model from your database schema by installing and invoking our [CLI](https://www.nuget.org/packages/dotnet-jerry/).
 ```shell
 > dotnet tool install --global dotnet-jerry
 > jerry scaffold -v sqlserver -c "SERVER=.;DATABASE=blogdb;TRUSTED_CONNECTION=true" -ns BlogDb.Database
@@ -30,10 +30,10 @@ Generated 7 tables and 21 columns in Database.cs.
 To learn more about the CLI, type in `jerry help`.
 
 ### MVC design
-Jerrycurl features a design process that uses variant of the model-view-controller pattern made specifically for the relational world and SQL language. Each project comprises a selection of models, accessors and queries/commands, as per the CQS pattern.
+Jerrycurl features a variant of the model-view-controller pattern made specifically for the relational world and its most prized asset: the SQL language. Each project consists of a selection of models, accessors and queries/commands, as per the CQS pattern.
 
 #### Model layer
-The model layer is a collection of simple data records and provides the structure for interacting with data and metadata on either the object side or the database side. It usually combines a representation of the database in a familiar class-per-table fashion along with whatever customized data views you might need.
+The model is a collection of simple data records and provides the structure for interacting with data and metadata on either the object side or the database side. It usually combines a representation of the database in a familiar class-per-table fashion along with whatever customized data views you might need.
 
 You can create views through composition with support for both unary properties (one-to-one mapping) or n-ary lists (one-to-many mapping).
 
@@ -59,7 +59,7 @@ class BlogView : Blog
 ```
 
 #### Command/query layer
-Commands and queries are written with our customized Razor SQL syntax and saved in your project with the `.cssql` extension which includes them as build targets for our Razor code generator. They are placed in either the `Queries` or `Commands` folders based on whether they *read* or *write* data in the underlying database.
+Commands and queries are written with our customized Razor SQL syntax and uses `.cssql` as extension, which ensures their compilation into the project in the usual build process. They are placed in either the `Queries` or `Commands` folders based on whether they *read* or *write* data in the underlying database.
 ```
 -- Queries/Blogs/GetAll.cssql
 @result BlogView
@@ -80,7 +80,7 @@ INNER JOIN  @R.Tbl() ON @R.Col(m => m.Id) = @p.Col(m => m.BlogId)
 WHERE       @R.Col(m => m.CreatedOn) >= @M.Par(m => m.FromDate)
 ```
 ```
--- Commands/Movies/AddBlogs.cssql
+-- Commands/Blogs/AddBlogs.cssql
 @model Blog
 
 @foreach (var v in this.M.Vals())
@@ -92,7 +92,7 @@ WHERE       @R.Col(m => m.CreatedOn) >= @M.Par(m => m.FromDate)
 ```
 
 #### Accessor (controller) layer
-Accessors provide the bridge between the model and command/query layer by passing *input data* to an underlying `cssql` files and returning the *output data* a either instantiations of new objects (queries) or modifications to existing objects (commands). 
+Accessors provide the bridge between the model and command/query layer by passing *input data* to an underlying `.cssql` file and returning the *output data* as either new objects (queries) or modifications to existing objects (commands). 
 ```csharp
 // Accessors/BlogsAccessor.cs
 public class BlogsAccessor : Accessor
