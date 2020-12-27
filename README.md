@@ -20,7 +20,7 @@ Jerrycurl is available on NuGet and can be installed into any [SDK-style](https:
 You can generate a basic object model from your database schema by installing and invoking our [CLI](https://www.nuget.org/packages/dotnet-jerry/).
 ```shell
 > dotnet tool install --global dotnet-jerry
-> jerry scaffold -v sqlserver -c "SERVER=.;DATABASE=blogdb;TRUSTED_CONNECTION=true" -ns BlogDb.Database
+> jerry scaffold -v sqlserver -c "DATABASE=blogdb;..." -ns BlogDb.Database
 Connecting to database 'blogdb'...
 Generating...
 Generated 7 tables and 21 columns in Database.cs.
