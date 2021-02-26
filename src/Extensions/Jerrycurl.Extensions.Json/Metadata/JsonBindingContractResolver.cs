@@ -95,7 +95,7 @@ namespace Jerrycurl.Extensions.Json.Metadata
             }
             else
             {
-                Expression methodCall = Expression.Call(deserializeMethod, value, Expression.Constant(metadata.Type), Expression.Constant(null));
+                Expression methodCall = Expression.Call(deserializeMethod, value, Expression.Constant(metadata.Type), Expression.Default(typeof(JsonSerializerOptions)));
 
                 return Expression.Convert(methodCall, metadata.Type);
             }
