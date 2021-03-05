@@ -269,8 +269,8 @@ function Run-Project-Test
     
     Push-Location $projectPath
     Write-Host "  Building project ($TargetFramework)..." -ForegroundColor Cyan
-    dotnet add package Jerrycurl --version $Version --source "$PackageSource"
-    dotnet add package $package --version $Version --source "$PackageSource"
+    dotnet add package Jerrycurl --version $Version
+    dotnet add package $package --version $Version
     ..\jerry scaffold -v $Vendor -c $ConnectionString -ns "Jerrycurl.Test.Integration.Database" --verbose
     if ($LastExitCode -eq 0)
     {
