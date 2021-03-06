@@ -811,7 +811,7 @@ namespace Jerrycurl.Cqs.Test
             result[0].Id1.ShouldBe(100);
             result[0].Id2.ShouldBe(200);
             result[0].Many.ShouldNotBeNull();
-            result[0].Many.Count.ShouldNotBeNull();
+            result[0].Many.Count.ShouldBe(1);
             result[0].Many[0].PriorityId1.ShouldBe(100);
             result[0].Many[0].PriorityId2.ShouldBe(0);
             result[0].One.ShouldNotBeNull();

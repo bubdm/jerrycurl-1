@@ -8,17 +8,17 @@
     </PropertyGroup>
 
     <PropertyGroup Label="NuGet Package Versions">
-        <OraclePackageVersion>2.19.100</OraclePackageVersion>
-        <SqlServerPackageVersion>2.1.0</SqlServerPackageVersion>
+		<OraclePackageVersion>2.19.101</OraclePackageVersion>
+        <SqlServerPackageVersion>2.1.2</SqlServerPackageVersion>
         <MySqlPackageVersion>8.0.23</MySqlPackageVersion>
-        <PostgresPackageVersion>5.0.0</PostgresPackageVersion>
-        <SqlitePackageVersion>5.0.1</SqlitePackageVersion>
-        <EntityFrameworkCorePackageVersion>3.1.9</EntityFrameworkCorePackageVersion>
+        <PostgresPackageVersion>5.0.3</PostgresPackageVersion>
+        <SqlitePackageVersion>5.0.3</SqlitePackageVersion>
+        <EntityFrameworkCorePackageVersion>3.1.12</EntityFrameworkCorePackageVersion>
         <JsonNetPackageVersion>12.0.3</JsonNetPackageVersion>
-        <JsonPackageVersion>4.7.2</JsonPackageVersion>
-        <MsBuildPackageVersion>16.7.0</MsBuildPackageVersion>
+        <JsonPackageVersion>5.0.1</JsonPackageVersion>
+        <MsBuildPackageVersion>16.9.0</MsBuildPackageVersion>
         <CSharpPackageVersion>4.5.0</CSharpPackageVersion>
-        <AsyncInterfacesPackageVersion>1.1.1</AsyncInterfacesPackageVersion>
+        <AsyncInterfacesPackageVersion>5.0.0</AsyncInterfacesPackageVersion>
     </PropertyGroup>
 
     <PropertyGroup Label="NuGet Package Versions (.NET Standard 2.0)">
