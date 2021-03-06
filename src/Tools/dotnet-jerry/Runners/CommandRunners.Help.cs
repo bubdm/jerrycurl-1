@@ -143,7 +143,7 @@ namespace Jerrycurl.Tools.DotNet.Cli.Runners
             DotNetJerryHost.WriteLine();
             DotNetJerryHost.WriteLine("Examples:");
             DotNetJerryHost.WriteLine("  Run a DELETE statement using config from a local 'mydb.cli' file:");
-            DotNetJerryHost.WriteLine("  > jerry run @db --sql \"DELETE FROM [BlogPost]\"");
+            DotNetJerryHost.WriteLine("  > jerry run @mydb --sql \"DELETE FROM [BlogPost]\"");
             DotNetJerryHost.WriteLine();
         }
 
