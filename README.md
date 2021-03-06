@@ -108,7 +108,7 @@ public class BlogsAccessor : Accessor
 ```
 
 #### Domain (application) layer
-A domain should be created in a parent namespace and presents a shared place for adding the requires configuration for all associated commands or queries executions.
+A domain should be created in a parent namespace and presents a shared place for adding the required configuration for all associated commands or queries executions.
 ```csharp
 // BlogsDomain.cs
 class BlogsDomain : IDomain
