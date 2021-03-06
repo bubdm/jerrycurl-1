@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <PropertyGroup Label="NuGet Package Versions">
-		<OraclePackageVersion>2.19.101</OraclePackageVersion>
+		<OraclePackageVersion>3.21.1</OraclePackageVersion>
         <SqlServerPackageVersion>2.1.2</SqlServerPackageVersion>
         <MySqlPackageVersion>8.0.23</MySqlPackageVersion>
         <PostgresPackageVersion>5.0.3</PostgresPackageVersion>
@@ -24,8 +24,8 @@
     <PropertyGroup Label="NuGet Package Versions (.NET Standard 2.0)">
 		<SqlServerPackageId_net20>System.Data.SqlClient</SqlServerPackageId_net20>
 		<SqlServerPackageVersion_net20>4.6.1</SqlServerPackageVersion_net20>
-		<SqlitePackageVersion_net20>2.2.6</SqlitePackageVersion_net20>
 		<EntityFrameworkCorePackageVersion_net20>2.2.6</EntityFrameworkCorePackageVersion_net20>
+		<OraclePackageVersion_net20>2.19.101</OraclePackageVersion_net20>
     </PropertyGroup>
 
     <PropertyGroup Label="Target Versions">
@@ -44,7 +44,7 @@
     <PropertyGroup Label="Target Versions (.NET Standard 2.0)" Condition="'$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp2.1' or '$(TargetFramework)' == 'net472'">
 		<SqlServerPackageId>$(SqlServerPackageId_net20)</SqlServerPackageId>
 		<SqlServerTargetVersion>$(SqlServerPackageVersion_net20)</SqlServerTargetVersion>
-		<SqliteTargetVersion>$(SqlitePackageVersion_net20)</SqliteTargetVersion>
 		<EntityFrameworkCoreTargetVersion>$(EntityFrameworkCorePackageVersion_net20)</EntityFrameworkCoreTargetVersion>
+		<OracleTargetVersion>$(OraclePackageVersion_net20)</OracleTargetVersion>
 	</PropertyGroup>
 </Project>
