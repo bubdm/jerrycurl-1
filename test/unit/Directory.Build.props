@@ -1,7 +1,7 @@
 <Project>
 	<PropertyGroup>
 		<LangVersion>latest</LangVersion>
-		<TargetFrameworks>net472;netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
+		<TargetFrameworks>netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
 	</PropertyGroup>
 
 	<ItemGroup>
