@@ -167,6 +167,11 @@ namespace Jerrycurl.Cqs.Commands
             this.Add(new ParameterBinding(target, parameter.Name));
         }
 
+        public void Add(IEnumerable<IParameter> parameters)
+        {
+            foreach (IParameter parameter in parameters ?? Array.Empty<IParameter>())
+                this.Add(parameter);
+        }
         public void Add(IParameter parameter)
         {
             if (parameter == null)
