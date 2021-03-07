@@ -77,6 +77,26 @@ namespace Jerrycurl.Cqs.Language
         public static IList<IParameter> AsParameters(this IRelation relation)
             => new ParameterStore().Add(relation);
 
+        public static IList<IDbDataParameter> AddParameters(this ITuple tuple, IDbCommand dbCommand)
+        {
+            List<IDbDataParameter> dbParameters = new List<IDbDataParameter>();
+
+            foreach (IParameter parameter in tuple.AsParameters())
+            {
+                IDbDataParameter dbParameter = dbCommand.CreateParameter();
+
+                parameter.Build(dbParameter);
+                dbParameters.Add(dbParameter);
+
+                dbCommand.Parameters.Add(dbParameter);
+            }
+
+            return dbParameters;
+        }
+
+        public static IList<IDbDataParameter> AddParameters(this IRelation relation, IDbCommand dbCommand)
+            => relation.Body.SelectMany(t => t.AddParameters(dbCommand)).ToList();
+
         public static IParameter AsParameter(this IField field, string parameterName)
             => new Parameter(parameterName, field);
 

@@ -34,6 +34,7 @@ namespace Jerrycurl.Cqs.Language
             => buffer.Add(targets.AsBindings());
 
         #endregion
+
         #region " Update "
         public static void UpdateAll(this CommandBuffer buffer, IDataReader dataReader)
         {
