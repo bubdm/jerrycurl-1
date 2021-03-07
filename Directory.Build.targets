@@ -65,6 +65,7 @@
 				SqlitePackageVersion_net20=$(SqlitePackageVersion_net20);
 				OraclePackageId=$(OraclePackageId);
 				OraclePackageVersion=$(OraclePackageVersion);
+				OraclePackageVersion_net20=$(OraclePackageVersion_net20);
 				MySqlPackageId=$(MySqlPackageId);
 				MySqlPackageVersion=$(MySqlPackageVersion);
 				PostgresPackageId=$(PostgresPackageId);
