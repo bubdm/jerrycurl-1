@@ -38,7 +38,7 @@ namespace Jerrycurl.Tools.Vendors.SqlServer
             {
                 primaryKeys.CommandText = @"SELECT T2.* FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS T1
                                             INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE T2 ON T2.CONSTRAINT_CATALOG = T1.CONSTRAINT_CATALOG AND T2.CONSTRAINT_SCHEMA = T1.CONSTRAINT_SCHEMA AND T2.CONSTRAINT_NAME = T1.CONSTRAINT_NAME
-                                            WHERE T1.CONSTRAINT_TYPE = 'PRIMARY KEY'
+                                            WHERE T1.CONSTRAINT_TYPE IN ('PRIMARY KEY', 'UNIQUE')
                                             ORDER BY T2.ORDINAL_POSITION";
 
                 await this.AddPrimaryKeysAsync(builder, primaryKeys);
